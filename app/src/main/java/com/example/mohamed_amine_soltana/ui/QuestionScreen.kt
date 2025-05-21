@@ -18,6 +18,17 @@ import com.example.mohamed_amine_soltana.viewmodel.GameViewModel
 @Composable
 fun QuestionScreen(viewModel: GameViewModel, navController: NavController) {
     val index by viewModel.currentQuestionIndex.collectAsState()
+    val score by viewModel.score.collectAsState()
+
+    if (viewModel.isGameOver()) {
+        LaunchedEffect(Unit) {
+            navController.navigate("score") {
+                popUpTo("question") { inclusive = true }
+            }
+        }
+        return
+    }
+
     val country = viewModel.countries[index]
     var userInput by remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
@@ -27,12 +38,22 @@ fun QuestionScreen(viewModel: GameViewModel, navController: NavController) {
         verticalArrangement = Arrangement.Center,
         modifier = Modifier.fillMaxSize().padding(16.dp)
     ) {
-        Text("Question ${index + 1}", style = MaterialTheme.typography.headlineMedium)
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(8.dp),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Text(
+                text = "Score: $score/${index}",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+
+        Text("Question ${index + 1}/10", style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(16.dp))
 
         Image(
             painter = painterResource(id = country.flagResId),
-            contentDescription = "Country Feature",
+            contentDescription = "Country Flag",
             modifier = Modifier.size(200.dp)
         )
 
@@ -50,8 +71,8 @@ fun QuestionScreen(viewModel: GameViewModel, navController: NavController) {
             keyboardActions = KeyboardActions(
                 onDone = {
                     focusManager.clearFocus()
-                    val isCorrect = country.name.equals(userInput.trim(), ignoreCase = true)
-                    navController.navigate("result/$isCorrect")
+                    submitAnswer(viewModel, userInput, navController)
+                    userInput = ""
                 }
             ),
             modifier = Modifier
@@ -63,12 +84,28 @@ fun QuestionScreen(viewModel: GameViewModel, navController: NavController) {
 
         Button(
             onClick = {
-                val isCorrect = country.name.equals(userInput.trim(), ignoreCase = true)
-                navController.navigate("result/$isCorrect")
+                submitAnswer(viewModel, userInput, navController)
+                userInput = ""
             },
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
         ) {
             Text("Submit")
         }
+    }
+}
+
+private fun submitAnswer(viewModel: GameViewModel, userInput: String, navController: NavController) {
+    val isCorrect = viewModel.checkAnswer(userInput.trim())
+
+    val isLastQuestion = viewModel.currentQuestionIndex.value == 9  // 10th question (index 9)
+
+    viewModel.nextQuestion()
+
+    if (isLastQuestion) {
+        navController.navigate("score") {
+            popUpTo("question") { inclusive = true }
+        }
+    } else {
+        navController.navigate("result/$isCorrect")
     }
 }

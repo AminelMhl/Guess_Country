@@ -22,7 +22,7 @@ fun HomeScreen(navController: NavController) {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "COUNTRY QUIZ",
+            text = "Guess the Country!",
             style = MaterialTheme.typography.headlineLarge,
             textAlign = TextAlign.Center
         )

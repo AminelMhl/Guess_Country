@@ -14,7 +14,9 @@ import com.example.mohamed_amine_soltana.viewmodel.GameViewModel
 @Composable
 fun ResultScreen(isCorrect: Boolean, viewModel: GameViewModel, navController: NavController) {
     val index by viewModel.currentQuestionIndex.collectAsState()
-    val country = viewModel.countries[index]
+
+    val previousIndex = (index - 1).coerceIn(0, viewModel.countries.size - 1)
+    val country = viewModel.countries[previousIndex]
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -34,12 +36,15 @@ fun ResultScreen(isCorrect: Boolean, viewModel: GameViewModel, navController: Na
             Text("Feature: ${country.feature}")
         } else {
             Text("Wrong answer!", style = MaterialTheme.typography.headlineMedium)
+            Spacer(Modifier.height(8.dp))
+            Text("The correct answer was: ${country.name}")
         }
 
         Button(onClick = {
-            viewModel.nextQuestion()
             if (viewModel.isGameOver()) {
-                navController.navigate("score")
+                navController.navigate("score") {
+                    popUpTo("question") { inclusive = true }
+                }
             } else {
                 navController.navigate("question")
             }

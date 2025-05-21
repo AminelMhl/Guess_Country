@@ -30,7 +30,6 @@ fun ScoreScreen(viewModel: GameViewModel, navController: NavController) {
 
         Spacer(Modifier.height(32.dp))
 
-        // Enhanced score display
         Card(
             modifier = Modifier
                 .size(200.dp)
